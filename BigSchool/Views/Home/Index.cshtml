@@ -1,0 +1,101 @@
+﻿@model BigSchool.ViewModels.CoursesViewModel
+@using BigSchool.Models
+@using Microsoft.AspNet.Identity;
+@{
+    ViewBag.Title = "Home Page";
+}
+<ul class="course">
+    @foreach (var course in Model.UpcommingCourses)
+    {
+        if (!course.IsCanceled)
+        {
+            <li>
+                <div class="date">
+                    <div class="month">
+                        @course.DateTime.ToString("MM")
+                    </div>
+                    <div class="day">
+                        @course.DateTime.ToString("dd")
+                    </div>
+                </div>
+                <div class="details">
+                    <span class="lecturer">
+                        @course.Lecturer.Name
+                        @if (Model.ShowAction)
+                        {
+                            var UserId = @User.Identity.GetUserId();
+                            ApplicationDbContext _dbContext = new ApplicationDbContext();
+                            bool isGoing = _dbContext.Followings.Any(a => a.FolloweeId == course.LecturerId && a.FollowerId == UserId);
+                            <span>
+                                @if (!isGoing)
+                                {
+                                    <button data-user-id="@course.LecturerId" class="btn btn-default btn-sm js-toggle-follow">Follow</button>
+                                }
+                                else
+                                {
+                                    <button data-user-id="@course.LecturerId" class="btn btn-info btn-sm js-toggle-follow">Following</button>
+                                }
+                            </span>
+                        }
+                        @*@if (Model.ShowAction)
+                            {
+                                <button class="btn btn-default btn-sm js-toggle-follow" data-user-id="@course.LecturerId">Follow</button>
+                            }*@
+                    </span>
+                    <span class="category">
+                        @course.Category.Name
+                    </span>
+                    @if (Model.ShowAction)
+                    {
+                        var UserId = @User.Identity.GetUserId();
+                        ApplicationDbContext _dbContext = new ApplicationDbContext();
+                        bool isGoing = _dbContext.Attendances.Any(a => a.CourseId == course.Id && a.AttendeeId == UserId);
+                        <span>
+                            @if (!isGoing)
+                            {
+                                <button data-course-id="@course.Id" class="btn btn-default btn-sm js-toggle-attendance">Going?</button>
+                            }
+                            else
+                            {
+                                <button data-course-id="@course.Id" class="btn btn-info btn-sm js-toggle-attendance">Going</button>
+                            }
+                        </span>
+                    }
+                </div>
+            </li>
+        }
+    }
+</ul>
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            $(".js-toggle-attendance").click(function (e) {
+                var button = $(e.target);
+                $.post("/api/attendances", { courseId: button.attr("data-course-id") })
+                    .done(function () {
+                        button
+                            .removeClass("btn-default")
+                            .addClass("btn-info")
+                            .text("Going");
+                    })
+                    .fail(function () {
+                        alert("Somthing went wrong!");
+                    });
+            });
+            $(".js-toggle-follow").click(function (e) {
+                var button = $(e.target);
+                $.post("/api/followings", { followeeId: button.attr("data-user-id") })
+                    .done(function () {
+                        button
+                            .removeClass("btn-default")
+                            .addClass("btn-info")
+                            .text("Following");
+                    })
+                    .fail(function () {
+                        alert("Somthing went wrong!");
+                    });
+            });
+        });
+    </script>
+}

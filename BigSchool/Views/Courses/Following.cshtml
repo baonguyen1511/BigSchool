@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNet.Identity;
+@using BigSchool.Models
+@model BigSchool.ViewModels.CoursesViewModel
+@{
+    ViewBag.Title = "Following";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Following</h2>
+
+<ul class="course" style="margin-top:15px;">
+    @foreach (var course in Model.UpcommingFollowing)
+    {
+        <li style="padding:20px;">
+            <div class="details">
+                <span class="Following">
+                    @course.Name - @course.Email
+                </span>
+                @if (Model.ShowAction)
+                {
+                    <button data-user-id="@course.Id " class="btn btn-info btn-sm js-toggle-follow">Following</button>
+                }
+            </div>
+        </li>
+    }
+</ul>
